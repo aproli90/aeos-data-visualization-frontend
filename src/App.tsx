@@ -92,7 +92,7 @@ export default function App() {
               <PieChart className="w-8 h-8 text-pink-600" />
             </div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-              Text to Chart Animator
+              Chart Genie
             </h1>
             <div className="flex items-center justify-center gap-2 text-lg text-gray-600">
               <Wand2 className="w-5 h-5" />

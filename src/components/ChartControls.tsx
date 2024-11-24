@@ -43,24 +43,25 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
   onAnimationStyleChange,
   onSmoothPointsChange
 }) => {
-  const SelectWrapper = ({ icon: Icon, children }: { icon: React.ReactNode; children: React.ReactNode }) => (
-    <div className="relative">
-      <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-        <div className="text-gray-500">
-          {Icon}
-        </div>
+  const SelectWrapper = ({ icon: Icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) => (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 px-3">
+        <div className="text-gray-500">{Icon}</div>
+        <label className="text-sm font-medium text-gray-600">{label}</label>
       </div>
-      {children}
+      <div className="relative">
+        {children}
+      </div>
     </div>
   );
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <SelectWrapper icon={<Palette className="w-5 h-5" />}>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <SelectWrapper icon={<Palette className="w-5 h-5" />} label="Color Theme">
         <select
           value={colorPalette}
           onChange={(e) => onColorPaletteChange(e.target.value as ColorPalette)}
-          className="block w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all hover:border-indigo-300"
+          className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all hover:border-indigo-300"
         >
           {Object.keys(COLOR_PALETTES).map(palette => (
             <option key={palette} value={palette}>
@@ -70,11 +71,11 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
         </select>
       </SelectWrapper>
 
-      <SelectWrapper icon={<Wand2 className="w-5 h-5" />}>
+      <SelectWrapper icon={<Wand2 className="w-5 h-5" />} label="Animation Style">
         <select
           value={animationStyle}
           onChange={(e) => onAnimationStyleChange(e.target.value)}
-          className="block w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all hover:border-indigo-300"
+          className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all hover:border-indigo-300"
         >
           {Object.entries(ANIMATION_STYLES[chartType]).map(([key, value]) => (
             <option key={key} value={key}>
@@ -85,11 +86,11 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
       </SelectWrapper>
 
       {(chartType === 'line' || chartType === 'area') && (
-        <SelectWrapper icon={<Type className="w-5 h-5" />}>
+        <SelectWrapper icon={<Type className="w-5 h-5" />} label="Line Style">
           <select
             value={smoothPoints ? 'smooth' : 'straight'}
             onChange={(e) => onSmoothPointsChange(e.target.value === 'smooth')}
-            className="block w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all hover:border-indigo-300"
+            className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all hover:border-indigo-300"
           >
             <option value="smooth">Smooth</option>
             <option value="straight">Straight</option>
@@ -97,11 +98,11 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
         </SelectWrapper>
       )}
 
-      <SelectWrapper icon={<ChartIcon type={chartType} />}>
+      <SelectWrapper icon={<ChartIcon type={chartType} />} label="Chart Type">
         <select
           value={chartType}
           onChange={(e) => onChartTypeChange(e.target.value as ChartType)}
-          className="block w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all hover:border-indigo-300"
+          className="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm transition-all hover:border-indigo-300"
         >
           <option value="line">Line Chart</option>
           <option value="area">Area Chart</option>
