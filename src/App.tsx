@@ -3,10 +3,11 @@ import { ChartRenderer } from './components/ChartRenderer';
 import { TextInput } from './components/TextInput';
 import { ChartControls } from './components/ChartControls';
 import { ChartActions } from './components/ChartActions';
+import { AuthorCredits } from './components/AuthorCredits';
 import { analyzeText, type ChartData } from './services/api';
 import { COLOR_PALETTES, type ColorPalette } from './constants/colorPalettes';
 import { ANIMATION_STYLES, type ChartType } from './constants/animationStyles';
-import { LineChart, BarChartIcon, PieChart, Wand2, Sparkles, Users } from 'lucide-react';
+import { BarChart2, LineChart, PieChart } from 'lucide-react';
 
 export default function App() {
   const [input, setInput] = useState('');
@@ -30,10 +31,8 @@ export default function App() {
         setAnimationStyle(defaultStyle);
       }
       
-      // Scroll to chart section with a small delay to ensure rendering is complete
-      setTimeout(() => {
-        chartSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
+      // Scroll to chart section
+      chartSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [chartData]);
 
@@ -82,22 +81,24 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100">
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <LineChart className="w-8 h-8 text-indigo-600" />
-              <BarChartIcon className="w-8 h-8 text-purple-600" />
-              <PieChart className="w-8 h-8 text-pink-600" />
+          <div className="flex items-center justify-center gap-4 mb-12">
+            <img src="/chart-genie-logo2.png" alt="Chart Genie" className="h-28" />
+            <div className="h-12 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent" />
+            <p className="text-base text-gray-600">Transform data stories into beautiful visualizations</p>
+          </div>
+
+          <div className="flex justify-center gap-6 mb-8">
+            <div className="w-14 h-14 flex items-center justify-center bg-white/40 backdrop-blur-sm rounded-2xl">
+              <BarChart2 className="w-8 h-8 text-indigo-600/70" />
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-              Chart Genie
-            </h1>
-            <div className="flex items-center justify-center gap-2 text-lg text-gray-600">
-              <Wand2 className="w-5 h-5" />
-              <p>Transform your data stories into beautiful animated visualizations</p>
-              <Sparkles className="w-5 h-5" />
+            <div className="w-14 h-14 flex items-center justify-center bg-white/40 backdrop-blur-sm rounded-2xl">
+              <LineChart className="w-8 h-8 text-purple-600/70" />
+            </div>
+            <div className="w-14 h-14 flex items-center justify-center bg-white/40 backdrop-blur-sm rounded-2xl">
+              <PieChart className="w-8 h-8 text-pink-600/70" />
             </div>
           </div>
 
@@ -111,13 +112,8 @@ export default function App() {
 
           {chartData && (
             <div ref={chartSectionRef} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8">
-              <div className="mb-6">
-                <div className="flex items-start gap-3 mb-4">
-                  <div className="p-2 bg-indigo-100 rounded-lg">
-                    <Sparkles className="w-5 h-5 text-indigo-600" />
-                  </div>
-                  <p className="text-gray-600 leading-relaxed">{chartData.chartTypeExplanation}</p>
-                </div>
+              <div className="mb-4">
+                <p className="text-gray-600 mb-6">{chartData.chartTypeExplanation}</p>
                 
                 <ChartControls
                   chartType={chartData.recommendedChartType as ChartType}
@@ -153,15 +149,7 @@ export default function App() {
             </div>
           )}
 
-          <footer className="text-center py-8">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Users className="w-5 h-5 text-indigo-600" />
-              <h3 className="text-lg font-semibold text-gray-700">Team Brainy Bots</h3>
-            </div>
-            <p className="text-gray-500">
-              Created by Sonjil, Sachin, Karthik, and Ashhar
-            </p>
-          </footer>
+          <AuthorCredits />
         </div>
       </div>
     </div>
