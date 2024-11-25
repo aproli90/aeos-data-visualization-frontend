@@ -19,7 +19,27 @@ export const analyzeText = async (text: string): Promise<ChartData> => {
       throw new Error(error.message || 'Failed to analyze text');
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    // Validate response data
+    if (!data.dataPoints || !Array.isArray(data.dataPoints) || data.dataPoints.length === 0) {
+      throw new Error('Could not extract data points from the text. Please try rephrasing with clearer numerical values.');
+    }
+
+    if (!data.recommendedChartType) {
+      throw new Error('Could not determine the best chart type for this data. Please try rephrasing your text.');
+    }
+
+    // Validate each data point
+    const invalidPoints = data.dataPoints.some(point => 
+      !point.name || typeof point.value !== 'number' || isNaN(point.value)
+    );
+
+    if (invalidPoints) {
+      throw new Error('Some data points are invalid. Please ensure your text contains clear numerical values with proper context.');
+    }
+
+    return data;
   } catch (error) {
     console.error('API Error:', error);
     throw error instanceof Error ? error : new Error('Failed to analyze text');

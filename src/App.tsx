@@ -84,31 +84,27 @@ export default function App() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-center gap-4 mb-12">
-            <img src="/chart-genie-logo2.png" alt="Chart Genie" className="h-28" />
-            <div className="h-12 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent" />
-            <p className="text-base text-gray-600">Transform data stories into beautiful visualizations</p>
+          <div className="flex items-center justify-center gap-6 mb-12">
+            <img src="/chart-genie-logo2.png" alt="Chart Genie" className="h-32" />
+            <div className="h-16 w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent" />
+            <p className="text-sm text-gray-500">Transform data stories into beautiful visualizations</p>
           </div>
 
-          <div className="flex justify-center gap-6 mb-8">
-            <div className="w-14 h-14 flex items-center justify-center bg-white/40 backdrop-blur-sm rounded-2xl">
-              <BarChart2 className="w-8 h-8 text-indigo-600/70" />
-            </div>
-            <div className="w-14 h-14 flex items-center justify-center bg-white/40 backdrop-blur-sm rounded-2xl">
-              <LineChart className="w-8 h-8 text-purple-600/70" />
-            </div>
-            <div className="w-14 h-14 flex items-center justify-center bg-white/40 backdrop-blur-sm rounded-2xl">
-              <PieChart className="w-8 h-8 text-pink-600/70" />
+          <div className="relative">
+            <TextInput
+              input={input}
+              loading={loading}
+              error={error}
+              onInputChange={setInput}
+              onAnalyze={handleAnalyze}
+            />
+            
+            <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-30">
+              <BarChart2 className="w-6 h-6 text-indigo-600" />
+              <LineChart className="w-6 h-6 text-purple-600" />
+              <PieChart className="w-6 h-6 text-pink-600" />
             </div>
           </div>
-
-          <TextInput
-            input={input}
-            loading={loading}
-            error={error}
-            onInputChange={setInput}
-            onAnalyze={handleAnalyze}
-          />
 
           {chartData && (
             <div ref={chartSectionRef} className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8">
