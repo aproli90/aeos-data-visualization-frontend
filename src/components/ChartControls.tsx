@@ -1,5 +1,5 @@
 import React from 'react';
-import { Palette, Wand2, Type, LineChart, BarChart2, PieChart, LayoutList, Activity } from 'lucide-react';
+import { Palette, Wand2, Type, LineChart, BarChart2, PieChart, LayoutList, Activity, ChevronLeft, ChevronRight } from 'lucide-react';
 import { COLOR_PALETTES, type ColorPalette } from '../constants/colorPalettes';
 import { ANIMATION_STYLES, type ChartType, type AnimationStyle } from '../constants/animationStyles';
 
@@ -8,10 +8,13 @@ interface ChartControlsProps {
   colorPalette: ColorPalette;
   animationStyle: string;
   smoothPoints: boolean;
+  currentSeriesIndex?: number;
+  totalSeries?: number;
   onChartTypeChange: (type: ChartType) => void;
   onColorPaletteChange: (palette: ColorPalette) => void;
   onAnimationStyleChange: (style: string) => void;
   onSmoothPointsChange: (smooth: boolean) => void;
+  onSeriesChange?: (index: number) => void;
 }
 
 const ChartIcon = ({ type }: { type: ChartType }) => {
@@ -38,10 +41,13 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
   colorPalette,
   animationStyle,
   smoothPoints,
+  currentSeriesIndex = 0,
+  totalSeries = 1,
   onChartTypeChange,
   onColorPaletteChange,
   onAnimationStyleChange,
-  onSmoothPointsChange
+  onSmoothPointsChange,
+  onSeriesChange
 }) => {
   const SelectWrapper = ({ icon: Icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) => (
     <div className="space-y-2">
@@ -54,6 +60,8 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
       </div>
     </div>
   );
+
+  const isPieOrDonut = chartType === 'pie' || chartType === 'donut';
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -95,6 +103,30 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
             <option value="smooth">Smooth</option>
             <option value="straight">Straight</option>
           </select>
+        </SelectWrapper>
+      )}
+
+      {isPieOrDonut && totalSeries > 1 && (
+        <SelectWrapper icon={<LayoutList className="w-5 h-5" />} label="Data Series">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onSeriesChange?.(currentSeriesIndex > 0 ? currentSeriesIndex - 1 : totalSeries - 1)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Previous series"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <div className="flex-1 text-center text-sm font-medium text-gray-700">
+              Series {currentSeriesIndex + 1} of {totalSeries}
+            </div>
+            <button
+              onClick={() => onSeriesChange?.(currentSeriesIndex < totalSeries - 1 ? currentSeriesIndex + 1 : 0)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              aria-label="Next series"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
         </SelectWrapper>
       )}
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { KeyboardEvent } from 'react';
 import { Brain, Loader2, FileText, AlertCircle } from 'lucide-react';
 
 interface TextInputProps {
@@ -16,6 +16,13 @@ export const TextInput: React.FC<TextInputProps> = ({
   onInputChange,
   onAnalyze
 }) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !loading && input.trim()) {
+      e.preventDefault();
+      onAnalyze();
+    }
+  };
+
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-8">
       <div className="mb-6">
@@ -24,10 +31,12 @@ export const TextInput: React.FC<TextInputProps> = ({
           <label className="text-lg font-medium text-gray-700">
             Enter your text with data
           </label>
+          <span className="text-sm text-gray-500 ml-auto">Press Ctrl+Enter to analyze</span>
         </div>
         <textarea
           value={input}
           onChange={(e) => onInputChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           className="w-full p-4 border border-gray-200 rounded-xl h-32 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white/50 backdrop-blur-sm"
           placeholder="Example: Sales increased from 100 units in January to 250 units in March, then peaked at 400 units in June..."
         />

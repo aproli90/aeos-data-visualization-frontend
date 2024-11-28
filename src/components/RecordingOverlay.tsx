@@ -4,16 +4,18 @@ interface RecordingOverlayProps {
   targetRef: React.RefObject<HTMLDivElement>;
   isRecording: boolean;
   onRecordingComplete: (videoUrl: string | null) => void;
+  dataSeries: any[]; // Add dataSeries prop
 }
 
-const RECORDING_DURATION = 6000; // 6 seconds to capture full animation
 const FRAME_RATE = 60;
 const FRAME_INTERVAL = 1000 / FRAME_RATE;
+const SECONDS_PER_CATEGORY = 2;
 
 export const RecordingOverlay: React.FC<RecordingOverlayProps> = ({
   targetRef,
   isRecording,
   onRecordingComplete,
+  dataSeries
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -21,6 +23,12 @@ export const RecordingOverlay: React.FC<RecordingOverlayProps> = ({
   const [progress, setProgress] = useState(0);
   const frameCountRef = useRef(0);
   const animationStartTimeRef = useRef(0);
+
+  // Calculate recording duration based on number of categories
+  const getRecordingDuration = () => {
+    const numCategories = dataSeries[0]?.dataPoints?.length || 0;
+    return numCategories * SECONDS_PER_CATEGORY * 1000;
+  };
 
   useEffect(() => {
     if (!isRecording) {
@@ -45,6 +53,8 @@ export const RecordingOverlay: React.FC<RecordingOverlayProps> = ({
       canvas.width = rect.width * scale;
       canvas.height = rect.height * scale;
       ctx.scale(scale, scale);
+
+      const recordingDuration = getRecordingDuration();
 
       try {
         const stream = canvas.captureStream(FRAME_RATE);
@@ -87,10 +97,10 @@ export const RecordingOverlay: React.FC<RecordingOverlayProps> = ({
 
             frameCountRef.current++;
             const elapsed = Date.now() - animationStartTimeRef.current;
-            const newProgress = Math.min((elapsed / RECORDING_DURATION) * 100, 100);
+            const newProgress = Math.min((elapsed / recordingDuration) * 100, 100);
             setProgress(newProgress);
 
-            if (elapsed >= RECORDING_DURATION && mediaRecorder.state === 'recording') {
+            if (elapsed >= recordingDuration && mediaRecorder.state === 'recording') {
               mediaRecorder.stop();
             }
           };
@@ -109,7 +119,7 @@ export const RecordingOverlay: React.FC<RecordingOverlayProps> = ({
           if (mediaRecorder.state === 'recording') {
             mediaRecorder.stop();
           }
-        }, RECORDING_DURATION);
+        }, recordingDuration);
 
       } catch (error) {
         console.error('Recording setup failed:', error);
@@ -124,7 +134,7 @@ export const RecordingOverlay: React.FC<RecordingOverlayProps> = ({
         mediaRecorderRef.current.stop();
       }
     };
-  }, [isRecording, targetRef, onRecordingComplete]);
+  }, [isRecording, targetRef, onRecordingComplete, dataSeries]);
 
   return (
     <>

@@ -20,6 +20,7 @@ export default function App() {
   const [whiteBackground, setWhiteBackground] = useState(false);
   const [animationStyle, setAnimationStyle] = useState('');
   const [smoothPoints, setSmoothPoints] = useState(true);
+  const [currentSeriesIndex, setCurrentSeriesIndex] = useState(0);
   const chartSectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,6 +31,9 @@ export default function App() {
         const defaultStyle = Object.keys(styles)[0];
         setAnimationStyle(defaultStyle);
       }
+      
+      // Reset series index when new data arrives
+      setCurrentSeriesIndex(0);
       
       // Scroll to chart section
       chartSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -80,6 +84,11 @@ export default function App() {
     return styles?.[animationStyle] || Object.values(styles)[0];
   };
 
+  const handleSeriesChange = (index: number) => {
+    setCurrentSeriesIndex(index);
+    setAnimationKey(prev => prev + 1); // Trigger animation for new series
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100">
       <div className="container mx-auto px-4 py-8">
@@ -116,15 +125,19 @@ export default function App() {
                   colorPalette={colorPalette}
                   animationStyle={animationStyle}
                   smoothPoints={smoothPoints}
+                  currentSeriesIndex={currentSeriesIndex}
+                  totalSeries={chartData.dataSeries.length}
                   onChartTypeChange={(type) => setChartData({ ...chartData, recommendedChartType: type })}
                   onColorPaletteChange={setColorPalette}
                   onAnimationStyleChange={setAnimationStyle}
                   onSmoothPointsChange={setSmoothPoints}
+                  onSeriesChange={handleSeriesChange}
                 />
               </div>
 
               <ChartRenderer
-                data={chartData.dataPoints}
+                dataSeries={chartData.dataSeries}
+                currentSeriesIndex={currentSeriesIndex}
                 chartType={chartData.recommendedChartType}
                 isRecording={isRecording}
                 onRecordingComplete={handleRecordingComplete}
