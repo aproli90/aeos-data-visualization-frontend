@@ -1,7 +1,8 @@
 export const commonChartOptions = {
   textStyle: {
     fontSize: 14,
-    fontWeight: 500
+    fontWeight: 500,
+    color: 'inherit'
   },
   tooltip: {
     trigger: 'item',
@@ -24,5 +25,17 @@ export const commonChartOptions = {
     shadowOffsetX: 0,
     shadowOffsetY: 5,
     transition: 'all 0.3s'
+  },
+  dataLabel: {
+    show: true,
+    position: 'top',
+    distance: 10,
+    fontSize: 14,
+    fontWeight: 500,
+    padding: [4, 8],
+    borderRadius: 4,
+    textBorderColor: 'transparent',
+    textShadowColor: 'rgba(0, 0, 0, 0.15)',
+    textShadowBlur: 3
   }
 };

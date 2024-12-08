@@ -1,15 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect } from 'react';
+import { useRecording } from '../hooks/useRecording';
+import type { DataSeries } from '../services/api';
 
 interface RecordingOverlayProps {
   targetRef: React.RefObject<HTMLDivElement>;
   isRecording: boolean;
   onRecordingComplete: (videoUrl: string | null) => void;
-  dataSeries: any[]; // Add dataSeries prop
+  dataSeries: DataSeries[];
 }
-
-const FRAME_RATE = 60;
-const FRAME_INTERVAL = 1000 / FRAME_RATE;
-const SECONDS_PER_CATEGORY = 2;
 
 export const RecordingOverlay: React.FC<RecordingOverlayProps> = ({
   targetRef,
@@ -17,147 +15,37 @@ export const RecordingOverlay: React.FC<RecordingOverlayProps> = ({
   onRecordingComplete,
   dataSeries
 }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const [progress, setProgress] = useState(0);
-  const frameCountRef = useRef(0);
-  const animationStartTimeRef = useRef(0);
-
-  // Calculate recording duration based on number of categories
-  const getRecordingDuration = () => {
-    const numCategories = dataSeries[0]?.dataPoints?.length || 0;
-    return numCategories * SECONDS_PER_CATEGORY * 1000;
-  };
+  const { progress, canvasRef, startRecording } = useRecording({
+    targetRef,
+    dataSeries,
+    onComplete: onRecordingComplete
+  });
 
   useEffect(() => {
-    if (!isRecording) {
-      setProgress(0);
-      frameCountRef.current = 0;
-      return;
+    if (isRecording) {
+      startRecording();
     }
+  }, [isRecording, startRecording]);
 
-    const startRecording = async () => {
-      if (!targetRef.current || !canvasRef.current) return;
-
-      // Wait for initial render
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d')!;
-
-      // Set canvas size with higher resolution
-      const targetElement = targetRef.current;
-      const rect = targetElement.getBoundingClientRect();
-      const scale = 2; // Increase quality
-      canvas.width = rect.width * scale;
-      canvas.height = rect.height * scale;
-      ctx.scale(scale, scale);
-
-      const recordingDuration = getRecordingDuration();
-
-      try {
-        const stream = canvas.captureStream(FRAME_RATE);
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: 'video/webm;codecs=vp9',
-          videoBitsPerSecond: 8000000 // Increase bitrate for better quality
-        });
-
-        chunksRef.current = [];
-        mediaRecorderRef.current = mediaRecorder;
-        animationStartTimeRef.current = Date.now();
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data.size > 0) {
-            chunksRef.current.push(e.data);
-          }
-        };
-
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(chunksRef.current, { type: 'video/webm' });
-          const url = URL.createObjectURL(blob);
-          onRecordingComplete(url);
-        };
-
-        const captureFrame = () => {
-          if (!targetElement || !ctx) return;
-
-          const svgElement = targetElement.querySelector('svg');
-          if (!svgElement) return;
-
-          const svgData = new XMLSerializer().serializeToString(svgElement);
-          const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-          const url = URL.createObjectURL(svgBlob);
-
-          const img = new Image();
-          img.onload = () => {
-            ctx.clearRect(0, 0, canvas.width / scale, canvas.height / scale);
-            ctx.drawImage(img, 0, 0);
-            URL.revokeObjectURL(url);
-
-            frameCountRef.current++;
-            const elapsed = Date.now() - animationStartTimeRef.current;
-            const newProgress = Math.min((elapsed / recordingDuration) * 100, 100);
-            setProgress(newProgress);
-
-            if (elapsed >= recordingDuration && mediaRecorder.state === 'recording') {
-              mediaRecorder.stop();
-            }
-          };
-          img.src = url;
-        };
-
-        // Start recording
-        mediaRecorder.start();
-        
-        // Capture frames at specified interval
-        const frameInterval = setInterval(captureFrame, FRAME_INTERVAL);
-
-        // Stop recording after duration
-        setTimeout(() => {
-          clearInterval(frameInterval);
-          if (mediaRecorder.state === 'recording') {
-            mediaRecorder.stop();
-          }
-        }, recordingDuration);
-
-      } catch (error) {
-        console.error('Recording setup failed:', error);
-        onRecordingComplete(null);
-      }
-    };
-
-    startRecording();
-
-    return () => {
-      if (mediaRecorderRef.current?.state === 'recording') {
-        mediaRecorderRef.current.stop();
-      }
-    };
-  }, [isRecording, targetRef, onRecordingComplete, dataSeries]);
+  if (!isRecording) return null;
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        className="hidden"
-      />
-      {isRecording && (
-        <div className="absolute bottom-0 left-4 right-4 mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-red-600">Processing...</span>
-            <span className="text-sm font-medium text-gray-600">
-              {progress.toFixed(1)}%
-            </span>
-          </div>
-          <div className="bg-gray-200 rounded-full h-2.5 overflow-hidden">
-            <div 
-              className="bg-red-600 h-full transition-all duration-50 ease-linear"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
+      <canvas ref={canvasRef} className="hidden" />
+      <div className="absolute bottom-0 inset-x-0 p-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-b-2xl">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-red-600 dark:text-red-400">Recording animation...</span>
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            {progress.toFixed(1)}%
+          </span>
         </div>
-      )}
+        <div className="h-2 rounded-full overflow-hidden bg-gradient-to-t from-gray-100 to-transparent dark:from-gray-700 dark:to-transparent">
+          <div 
+            className="h-full transform origin-left bg-gradient-to-l from-red-600/100 to-red-600/30 dark:from-red-500/100 dark:to-red-500/30 transition-all duration-100 ease-linear"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
     </>
   );
 };
