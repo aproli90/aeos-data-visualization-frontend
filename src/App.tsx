@@ -7,6 +7,7 @@ import { AuthorCredits } from './components/AuthorCredits';
 import { RecordingOverlay } from './components/RecordingOverlay';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ResizableChartContainer } from './components/ResizableChartContainer';
+import { DataEditor } from './components/DataEditor';
 import { analyzeText, type ChartData } from './services/api';
 import { COLOR_PALETTES, type ColorPalette } from './constants/colorPalettes';
 import { ANIMATION_STYLES, type ChartType } from './constants/animationStyles';
@@ -22,12 +23,12 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [animationKey, setAnimationKey] = useState(0);
   const [colorPalette, setColorPalette] = useState<ColorPalette>('modern');
-  const [showGridlines, setShowGridlines] = useState(true);
+  const [colors, setColors] = useState(COLOR_PALETTES.modern);
   const [animationStyle, setAnimationStyle] = useState('');
   const [smoothPoints, setSmoothPoints] = useState(true);
   const [showDataLabels, setShowDataLabels] = useState(true);
+  const [showGridlines, setShowGridlines] = useState(true);
   const [currentSeriesIndex, setCurrentSeriesIndex] = useState(0);
-  const [colors, setColors] = useState(COLOR_PALETTES[colorPalette]);
   const chartSectionRef = useRef<HTMLDivElement>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
@@ -83,17 +84,11 @@ export default function App() {
     setIsRecording(true);
   };
 
-  const handleColorPaletteChange = (palette: ColorPalette) => {
-    setColorPalette(palette);
-    setColors(COLOR_PALETTES[palette]);
-    setAnimationKey(prev => prev + 1);
-  };
-
-  const handleColorRotate = () => {
-    const rotatedColors = rotateColors([...colors]);
-    COLOR_PALETTES[colorPalette] = rotatedColors;
-    setColors(rotatedColors);
-    setAnimationKey(prev => prev + 1);
+  const getCurrentAnimationStyle = () => {
+    if (!chartData) return null;
+    const chartType = chartData.recommendedChartType as ChartType;
+    const styles = ANIMATION_STYLES[chartType];
+    return styles?.[animationStyle] || Object.values(styles)[0];
   };
 
   const handleSeriesChange = (index: number) => {
@@ -101,11 +96,32 @@ export default function App() {
     setAnimationKey(prev => prev + 1);
   };
 
-  const getCurrentAnimationStyle = () => {
-    if (!chartData) return null;
-    const chartType = chartData.recommendedChartType as ChartType;
-    const styles = ANIMATION_STYLES[chartType];
-    return styles?.[animationStyle as keyof typeof styles] || Object.values(styles)[0];
+  const handleChartTypeChange = (type: ChartType) => {
+    if (chartData) {
+      setChartData({ ...chartData, recommendedChartType: type });
+      const styles = ANIMATION_STYLES[type];
+      if (styles) {
+        const defaultStyle = Object.keys(styles)[0];
+        setAnimationStyle(defaultStyle);
+      }
+      setAnimationKey(prev => prev + 1);
+    }
+  };
+
+  const handleColorPaletteChange = (palette: ColorPalette) => {
+    setColorPalette(palette);
+    setColors(COLOR_PALETTES[palette]);
+  };
+
+  const handleColorRotate = () => {
+    setColors(prevColors => rotateColors(prevColors));
+  };
+
+  const handleDataUpdate = (newData: ChartData['dataSeries']) => {
+    if (chartData) {
+      setChartData({ ...chartData, dataSeries: newData });
+      setAnimationKey(prev => prev + 1);
+    }
   };
 
   const isPieOrDonut = chartData?.recommendedChartType === 'pie' || chartData?.recommendedChartType === 'donut';
@@ -121,22 +137,14 @@ export default function App() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Transform data stories into beautiful visualizations</p>
           </div>
 
-          <div className="relative">
-            <TextInput
-              input={input}
-              loading={loading}
-              error={error}
-              onInputChange={setInput}
-              onAnalyze={handleAnalyze}
-            />
-            
-            <div className="absolute -right-12 top-1/2 -translate-y-1/2 flex flex-col gap-3 opacity-30">
-              <BarChart2 className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-              <LineChart className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              <PieChart className="w-6 h-6 text-pink-600 dark:text-pink-400" />
-            </div>
-          </div>
-
+          <TextInput
+            input={input}
+            loading={loading}
+            error={error}
+            onInputChange={setInput}
+            onAnalyze={handleAnalyze}
+          />
+          
           {chartData && (
             <div ref={chartSectionRef} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8">
               <div className="mb-4">
@@ -147,15 +155,13 @@ export default function App() {
                   colorPalette={colorPalette}
                   animationStyle={animationStyle}
                   smoothPoints={smoothPoints}
-                  showGridlines={showGridlines}
                   currentSeriesIndex={currentSeriesIndex}
                   totalSeries={chartData.dataSeries.length}
-                  onChartTypeChange={(type) => setChartData({ ...chartData, recommendedChartType: type })}
+                  onChartTypeChange={handleChartTypeChange}
                   onColorPaletteChange={handleColorPaletteChange}
                   onColorRotate={handleColorRotate}
                   onAnimationStyleChange={setAnimationStyle}
                   onSmoothPointsChange={setSmoothPoints}
-                  onShowGridlinesChange={setShowGridlines}
                   onSeriesChange={handleSeriesChange}
                 />
               </div>
@@ -171,11 +177,17 @@ export default function App() {
                       colors={colors}
                       showGridlines={showGridlines}
                       animationStyle={getCurrentAnimationStyle()}
+                      animationStyleKey={animationStyle}
                       smoothPoints={smoothPoints}
                       showDataLabels={showDataLabels}
                     />
                   </div>
                 </ResizableChartContainer>
+
+                <DataEditor
+                  dataSeries={chartData.dataSeries}
+                  onDataUpdate={handleDataUpdate}
+                />
 
                 <ChartActions
                   isRecording={isRecording}

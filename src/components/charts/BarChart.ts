@@ -2,7 +2,7 @@ import type { EChartsOption } from 'echarts';
 import type { DataSeries } from '../../services/api';
 import { calculateYAxisRange, getAxisLabelOptions, getYAxisLabelConfig } from './utils';
 import { commonChartOptions } from './chartConfig';
-import { createGradient, hexToRGBA } from '../../utils/colorUtils';
+import { createGradient } from '../../utils/colorUtils';
 
 interface BarChartProps {
   dataSeries: DataSeries[];

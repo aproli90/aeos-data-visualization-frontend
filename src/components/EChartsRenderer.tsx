@@ -7,6 +7,7 @@ import { getBarChartOptions } from './charts/BarChart';
 import { getBarRaceChartOptions } from './charts/BarRaceChart';
 import { useTheme } from '../contexts/ThemeContext';
 import { createGradient } from '../utils/colorUtils';
+import { ANIMATION_STYLES, type ChartType } from '../constants/animationStyles';
 
 interface EChartsRendererProps {
   dataSeries: DataSeries[];
@@ -18,12 +19,12 @@ interface EChartsRendererProps {
     type: string;
     easing: string;
     duration: number;
-    delay?: number;
     rotate?: number;
     centerPop?: boolean;
     startAngle?: number;
     clockwise?: boolean;
-  };
+  } | null;
+  animationStyleKey: string;
   smoothPoints: boolean;
   showDataLabels: boolean;
   currentSeriesIndex: number;
@@ -36,6 +37,7 @@ export const EChartsRenderer: React.FC<EChartsRendererProps> = ({
   colors,
   showGridlines,
   animationStyle,
+  animationStyleKey,
   smoothPoints,
   showDataLabels,
   currentSeriesIndex
@@ -44,18 +46,42 @@ export const EChartsRenderer: React.FC<EChartsRendererProps> = ({
   const { theme } = useTheme();
   const timerRef = useRef<number>();
   const currentIndexRef = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (chartRef.current && animationStyle) {
+    // Set data attributes on the container div
+    if (containerRef.current) {
+      containerRef.current.setAttribute('data-chart-type', chartType);
+      containerRef.current.setAttribute('data-animation-style', animationStyleKey || 'default');
+    }
+
+    if (chartRef.current) {
       const chart = chartRef.current.getEchartsInstance();
       const isPieOrDonut = chartType === 'pie' || chartType === 'donut';
       const activeDataSeries = isPieOrDonut ? [dataSeries[currentSeriesIndex]] : dataSeries;
+
+      // Get default animation style if none provided
+      const defaultStyle = ANIMATION_STYLES[chartType as ChartType]?.[Object.keys(ANIMATION_STYLES[chartType as ChartType])[0]];
+      const currentStyle = animationStyle || defaultStyle;
+
+      if (!currentStyle) {
+        console.error('Animation style not found');
+        return;
+      }
+
+      // Calculate total duration based on data points
+      const maxPoints = Math.max(...activeDataSeries.map(series => series.dataPoints.length));
+      const totalDuration = currentStyle.duration * maxPoints;
 
       const commonProps = {
         dataSeries: activeDataSeries,
         colors,
         showGridlines,
-        animationStyle,
+        animationStyle: {
+          ...currentStyle,
+          duration: totalDuration,
+          delay: currentStyle.delay
+        },
         showDataLabels,
         theme
       };
@@ -86,7 +112,10 @@ export const EChartsRenderer: React.FC<EChartsRendererProps> = ({
           });
           break;
         case 'bar_race':
-          options = getBarRaceChartOptions(commonProps);
+          options = getBarRaceChartOptions({
+            ...commonProps,
+            updateDuration: totalDuration / maxPoints
+          });
 
           // Clear any existing timer
           if (timerRef.current) {
@@ -99,7 +128,7 @@ export const EChartsRenderer: React.FC<EChartsRendererProps> = ({
           )).sort();
 
           currentIndexRef.current = 0;
-          const updateFrequency = Math.max(1000, animationStyle.duration / timePoints.length);
+          const updateFrequency = totalDuration / timePoints.length;
 
           // Start animation loop
           timerRef.current = window.setInterval(() => {
@@ -186,14 +215,16 @@ export const EChartsRenderer: React.FC<EChartsRendererProps> = ({
   }, [animationKey, chartType, colors, showGridlines, animationStyle, smoothPoints, showDataLabels, dataSeries, currentSeriesIndex, theme]);
 
   return (
-    <ReactECharts
-      ref={chartRef}
-      option={{}}
-      style={{ height: '100%', width: '100%' }}
-      opts={{ renderer: 'svg' }}
-      notMerge={true}
-      lazyUpdate={false}
-      theme={theme === 'dark' ? 'dark' : undefined}
-    />
+    <div ref={containerRef} className="w-full h-full">
+      <ReactECharts
+        ref={chartRef}
+        option={{}}
+        style={{ height: '100%', width: '100%' }}
+        opts={{ renderer: 'svg' }}
+        notMerge={true}
+        lazyUpdate={false}
+        theme={theme === 'dark' ? 'dark' : undefined}
+      />
+    </div>
   );
 };

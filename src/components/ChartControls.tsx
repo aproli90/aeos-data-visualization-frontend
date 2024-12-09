@@ -41,6 +41,31 @@ const ChartIcon = ({ type }: { type: ChartType }) => {
   }
 };
 
+const chartGroups = [
+  {
+    label: 'Line Charts',
+    options: [
+      { value: 'line', label: 'Line Chart' },
+      { value: 'area', label: 'Area Chart' }
+    ]
+  },
+  {
+    label: 'Bar Charts',
+    options: [
+      { value: 'vertical_bar', label: 'Vertical Bar' },
+      { value: 'horizontal_bar', label: 'Horizontal Bar' },
+      { value: 'bar_race', label: 'Racing Bar' }
+    ]
+  },
+  {
+    label: 'Circular Charts',
+    options: [
+      { value: 'pie', label: 'Pie Chart' },
+      { value: 'donut', label: 'Donut Chart' }
+    ]
+  }
+];
+
 export const ChartControls: React.FC<ChartControlsProps> = ({
   chartType,
   colorPalette,
@@ -69,13 +94,15 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
           onChange={(e) => onChartTypeChange(e.target.value as ChartType)}
           className="block w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent bg-white dark:bg-gray-800 shadow-sm transition-all hover:border-indigo-300 dark:hover:border-indigo-600 text-gray-700 dark:text-gray-200"
         >
-          <option value="line">Line Chart</option>
-          <option value="area">Area Chart</option>
-          <option value="pie">Pie Chart</option>
-          <option value="donut">Donut Chart</option>
-          <option value="vertical_bar">Vertical Bar</option>
-          <option value="horizontal_bar">Horizontal Bar</option>
-          <option value="bar_race">Racing Bar</option>
+          {chartGroups.map(group => (
+            <optgroup key={group.label} label={group.label}>
+              {group.options.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </optgroup>
+          ))}
         </select>
       </SelectWrapper>
 
@@ -115,30 +142,6 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
             <option value="smooth">Smooth</option>
             <option value="straight">Straight</option>
           </select>
-        </SelectWrapper>
-      )}
-
-      {isPieOrDonut && totalSeries > 1 && (
-        <SelectWrapper icon={<LayoutList className="w-5 h-5" />} label="Data Series">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => onSeriesChange?.(currentSeriesIndex > 0 ? currentSeriesIndex - 1 : totalSeries - 1)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              aria-label="Previous series"
-            >
-              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            </button>
-            <div className="flex-1 text-center text-sm font-medium text-gray-700 dark:text-gray-200">
-              Series {currentSeriesIndex + 1} of {totalSeries}
-            </div>
-            <button
-              onClick={() => onSeriesChange?.(currentSeriesIndex < totalSeries - 1 ? currentSeriesIndex + 1 : 0)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              aria-label="Next series"
-            >
-              <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            </button>
-          </div>
         </SelectWrapper>
       )}
     </div>

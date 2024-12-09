@@ -9,13 +9,8 @@ interface BarRaceChartProps {
   colors: string[];
   showGridlines: boolean;
   animationStyle: {
-    duration: number;
     easing: string;
-    delay?: number;
     updateDuration?: number;
-    labelEffect?: string;
-    barEffect?: string;
-    pauseOnUpdate?: boolean;
     emphasizeLeader?: boolean;
   };
   showDataLabels: boolean;
@@ -45,6 +40,7 @@ export const getBarRaceChartOptions = ({
     value: series.dataPoints[0]?.value || 0,
     color: colors[index % colors.length]
   })).sort((a, b) => b.value - a.value);
+  const dataPointsCount = dataSeries.length;
 
   const updateDuration = animationStyle.updateDuration || 1000;
 
@@ -118,9 +114,9 @@ export const getBarRaceChartOptions = ({
         }
       },
       animationDuration: updateDuration,
-      animationDurationUpdate: updateDuration,
+      animationDurationUpdate: updateDuration / dataPointsCount,
       animationEasing: animationStyle.easing,
-      animationEasingUpdate: animationStyle.easing
+      animationEasingUpdate: animationStyle.easing,
     },
     series: [{
       type: 'bar',
@@ -184,13 +180,9 @@ export const getBarRaceChartOptions = ({
           shadowColor: 'rgba(0,0,0,0.3)'
         }
       },
-      animationDuration: updateDuration,
-      animationDurationUpdate: updateDuration,
-      animationEasing: animationStyle.easing,
-      animationEasingUpdate: animationStyle.easing
     }],
-    animationDuration: updateDuration,
-    animationDurationUpdate: updateDuration,
+    animationDuration: updateDuration * dataPointsCount,
+    animationDurationUpdate: updateDuration * dataPointsCount,
     animationEasing: animationStyle.easing,
     animationEasingUpdate: animationStyle.easing,
     tooltip: {

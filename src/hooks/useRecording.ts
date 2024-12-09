@@ -10,8 +10,7 @@ interface UseRecordingOptions {
 
 const FRAME_RATE = 60;
 const FRAME_INTERVAL = 1000 / FRAME_RATE;
-const POINTS_DURATION = 2000; // 2 seconds per data point
-const BUFFER_DURATION = 1000;
+const BUFFER_DURATION = 2000; // Increased buffer duration
 
 export const useRecording = ({ targetRef, dataSeries, onComplete }: UseRecordingOptions) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -25,24 +24,56 @@ export const useRecording = ({ targetRef, dataSeries, onComplete }: UseRecording
   const progressIntervalRef = useRef<number>();
 
   const calculateDuration = useCallback(() => {
-    const maxPoints = Math.max(...dataSeries.map(series => series.dataPoints.length));
+  const chartContainer = targetRef.current?.querySelector('[data-chart-type]');
+  if (!chartContainer) {
+    console.error('Chart container not found');
+    return 5000; // Increased default duration as fallback
+  }
 
-    // Find the longest animation duration from all styles
-    let maxAnimationDuration = 0;
-    Object.values(ANIMATION_STYLES).forEach(styles => {
-      Object.values(styles).forEach(style => {
-        const totalDuration = style.duration + ((style.delay || 0) * maxPoints);
-        if (totalDuration > maxAnimationDuration) {
-          maxAnimationDuration = totalDuration;
-        }
-      });
-    });
+  const chartType = chartContainer.getAttribute('data-chart-type') as ChartType;
+  const animationStyleKey = chartContainer.getAttribute('data-animation-style');
+  
+  if (!chartType || !animationStyleKey || !ANIMATION_STYLES[chartType]) {
+    console.error('Invalid chart type or animation style');
+    return 5000; // Increased default duration as fallback
+  }
 
-    // Return the maximum of points-based duration and animation duration
-    return maxAnimationDuration + BUFFER_DURATION;
-  }, [dataSeries]);
+  const styles = ANIMATION_STYLES[chartType];
+  const animationStyle = styles[animationStyleKey as keyof typeof styles];
+  if (!animationStyle) {
+    console.error('Animation style not found');
+    return 5000; // Increased default duration as fallback
+  }
+
+  // Calculate max points across all series
+  const maxPoints = Math.max(...dataSeries.map(series => series.dataPoints.length));
+
+  // For bar race, we need extra time for the full animation cycle
+  if (chartType === 'bar_race') {
+    const combinedDuration = animationStyle.duration * maxPoints;
+    // Total duration includes all transitions between states plus extra time for sorting animations
+    const totalDuration = combinedDuration * 1.5;
+    // Add extra buffer for initial and final states
+    return totalDuration + BUFFER_DURATION;
+  }
+
+  // For other chart types
+  const baseDuration = animationStyle.duration;
+  const delayPerPoint = animationStyle.delay || 0;
+  
+  // Calculate combined duration based on points
+  const combinedDuration = baseDuration * maxPoints;
+  const totalDelay = delayPerPoint * maxPoints;
+  const complexityMultiplier = chartType === 'pie' || chartType === 'donut' ? 2 : 1.5;
+  const totalDuration = (combinedDuration + totalDelay) * complexityMultiplier;
+
+  // Add buffer duration for start and end states
+  return totalDuration + BUFFER_DURATION;
+}, [dataSeries, targetRef]);
 
   const updateProgress = useCallback(() => {
+    if (durationRef.current === 0) return;
+    
     const elapsed = Date.now() - startTimeRef.current;
     const newProgress = Math.min((elapsed / durationRef.current) * 100, 100);
     setProgress(newProgress);
@@ -91,10 +122,10 @@ export const useRecording = ({ targetRef, dataSeries, onComplete }: UseRecording
     canvas.height = rect.height * scale;
     canvas.getContext('2d')?.scale(scale, scale);
 
-    durationRef.current = calculateDuration();
-    startTimeRef.current = Date.now();
-
     try {
+      durationRef.current = calculateDuration();
+      startTimeRef.current = Date.now();
+
       const stream = canvas.captureStream(FRAME_RATE);
       const mediaRecorder = new MediaRecorder(stream, {
         mimeType: 'video/webm;codecs=vp9',

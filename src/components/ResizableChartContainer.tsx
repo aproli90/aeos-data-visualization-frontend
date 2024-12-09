@@ -78,7 +78,7 @@ export const ResizableChartContainer: React.FC<ResizableChartContainerProps> = (
       {children}
       
       <div 
-        className="absolute bottom-3 right-3 p-2 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:shadow-xl"
+        className="absolute bottom-3 right-3 p-2 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity duration-200 shadow-lg hover:shadow-xl z-10"
         onMouseDown={startResize}
       >
         <GripVertical className="w-4 h-4 text-gray-600 dark:text-gray-300" />
