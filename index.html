@@ -5,6 +5,113 @@
     <link rel="icon" type="image/png" href="/chart-genie-logo2.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chart Genie - Transform Data Stories into Visualizations</title>
+    
+    <!-- Google Fonts for fallbacks -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Righteous&family=Audiowide&family=Orbitron:wght@400;500;600;700&family=Poiret+One&family=Exo+2:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&family=Coda:wght@400;800&family=Anton&family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Adobe Fonts for premium fonts (you would need an Adobe Fonts subscription) -->
+    <link rel="stylesheet" href="https://use.typekit.net/[your-kit-code].css">
+
+    <!-- Font loading and fallback handling -->
+    <style>
+      /* Font loading detection */
+      .fonts-loaded {
+        opacity: 1;
+        transition: opacity 0.3s ease;
+      }
+
+      /* Font fallback system */
+      @font-face {
+        font-family: 'Broadway';
+        src: local('Broadway');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Bauhaus 93';
+        src: local('Bauhaus 93');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Berlin Sans FB';
+        src: local('Berlin Sans FB');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Copperplate Gothic';
+        src: local('Copperplate Gothic');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'ITC Avant Garde Gothic';
+        src: local('ITC Avant Garde Gothic');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Futura Md BT';
+        src: local('Futura Md BT');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Avant Garde';
+        src: local('Avant Garde');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Rockwell';
+        src: local('Rockwell');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Eurostile';
+        src: local('Eurostile');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Impact';
+        src: local('Impact');
+        font-display: swap;
+      }
+
+      @font-face {
+        font-family: 'Gill Sans Nova';
+        src: local('Gill Sans Nova');
+        font-display: swap;
+      }
+    </style>
+
+    <!-- Font loading detection script -->
+    <script>
+      document.documentElement.classList.add('fonts-loading');
+      Promise.all([
+        document.fonts.load('1em Broadway'),
+        document.fonts.load('1em "Bauhaus 93"'),
+        document.fonts.load('1em "Berlin Sans FB"'),
+        document.fonts.load('1em "Copperplate Gothic"'),
+        document.fonts.load('1em "ITC Avant Garde Gothic"'),
+        document.fonts.load('1em "Futura Md BT"'),
+        document.fonts.load('1em "Avant Garde"'),
+        document.fonts.load('1em Rockwell'),
+        document.fonts.load('1em Eurostile'),
+        document.fonts.load('1em Impact'),
+        document.fonts.load('1em "Gill Sans Nova"')
+      ]).then(() => {
+        document.documentElement.classList.remove('fonts-loading');
+        document.documentElement.classList.add('fonts-loaded');
+      }).catch(error => {
+        console.warn('Some fonts failed to load:', error);
+        document.documentElement.classList.remove('fonts-loading');
+        document.documentElement.classList.add('fonts-loaded');
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>

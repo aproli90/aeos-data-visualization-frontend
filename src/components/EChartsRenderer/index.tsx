@@ -67,7 +67,7 @@ export const EChartsRenderer: React.FC<EChartsRendererProps> = ({
     chartType === 'bar_race' ? animationStyle : null,
     theme,
     animationKey,
-    chartOptions?.textStyle
+    font
   );
 
   // Update chart when options change

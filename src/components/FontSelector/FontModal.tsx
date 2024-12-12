@@ -38,6 +38,9 @@ export const FontModal: React.FC<FontModalProps> = ({
     setShowCustomInput(false);
   };
 
+  // Check if current font is a custom font
+  const isCustomFont = currentFont && !(currentFont in CHART_FONTS);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -68,6 +71,21 @@ export const FontModal: React.FC<FontModalProps> = ({
           ))}
         </div>
 
+        {/* Show current custom font if any */}
+        {isCustomFont && (
+          <div className="px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+            <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+              Current Custom Font
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-lg text-gray-900 dark:text-gray-100" style={{ fontFamily: currentFont }}>
+                {currentFont}
+              </span>
+              <Check className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 ml-4" />
+            </div>
+          </div>
+        )}
+
         <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
           {showCustomInput ? (
             <div className="space-y-3">
@@ -83,7 +101,7 @@ export const FontModal: React.FC<FontModalProps> = ({
                     setError('');
                   }}
                   placeholder="e.g., Arial, Helvetica Neue"
-                  className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent"
+                  className="w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
                 />
               </div>
 

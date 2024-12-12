@@ -20,7 +20,7 @@ export class BarRaceAnimator {
     colors: string[] | undefined,
     private config: AnimationConfig,
     private isDark: boolean,
-    private textStyle: TextStyle
+    private font: string
   ) {
     // Initialize color manager with validation
     this.colorManager = new ColorManager(colors);
@@ -131,7 +131,7 @@ export class BarRaceAnimator {
           fontSize: 16,
           fontWeight: 'bold',
           fill: this.isDark ? '#e5e7eb' : '#374151',
-          fontFamily: this.textStyle?.fontFamily,
+          fontFamily: this.font,
         }
       }]
     });

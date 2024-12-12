@@ -1,5 +1,6 @@
 import React, { KeyboardEvent } from 'react';
 import { Brain, Loader2, FileText, AlertCircle } from 'lucide-react';
+import { DecorativeIcons } from './DecorativeIcons';
 
 interface TextInputProps {
   input: string;
@@ -24,7 +25,7 @@ export const TextInput: React.FC<TextInputProps> = ({
   };
 
   return (
-    <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl p-8 mb-8 transition-all duration-300">
+    <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl shadow-xl p-8 mb-8 transition-all duration-300">
       <div className="mb-6">
         <div className="flex items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-3">
@@ -40,18 +41,21 @@ export const TextInput: React.FC<TextInputProps> = ({
           </span>
         </div>
 
-        <textarea
-          value={input}
-          onChange={(e) => onInputChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          className="w-full h-48 p-4 bg-white dark:bg-gray-900 
-            border border-indigo-200 dark:border-gray-700 rounded-xl 
-            focus:ring-2 focus:ring-indigo-500/50 dark:focus:ring-indigo-400/50 focus:border-transparent 
-            transition-all text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400
-            shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] 
-            hover:border-indigo-300 dark:hover:border-indigo-500"
-          placeholder="Example: Sales increased from 100 units in January to 250 units in March, then peaked at 400 units in June..."
-        />
+        <div className="relative">
+          <textarea
+            value={input}
+            onChange={(e) => onInputChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            className="w-full h-48 p-4 bg-white dark:bg-gray-900 
+              border border-indigo-200 dark:border-gray-700 rounded-xl 
+              focus:ring-2 focus:ring-indigo-500/50 dark:focus:ring-indigo-400/50 focus:border-transparent 
+              transition-all text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-400
+              shadow-[inset_0_2px_4px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] 
+              hover:border-indigo-300 dark:hover:border-indigo-500"
+            placeholder="Example: Sales increased from 100 units in January to 250 units in March, then peaked at 400 units in June..."
+          />
+          <DecorativeIcons />
+        </div>
       </div>
 
       {error && (

@@ -51,6 +51,7 @@ export const getBarRaceChartOptions = ({
   const padding = valueRange * 0.1;
 
   return {
+    fontFamily: textStyle.fontFamily,
     backgroundColor: 'transparent',
     grid: { left: 200, right: 120, top: 50, bottom: 50 },
     xAxis: {

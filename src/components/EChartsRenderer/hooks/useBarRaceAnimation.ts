@@ -13,7 +13,7 @@ export const useBarRaceAnimation = (
   animationStyle: AnimationConfig | null,
   theme: 'light' | 'dark',
   animationKey: number,
-  textStyle: TextStyle
+  font: string
 ) => {
   const animatorRef = useRef<BarRaceAnimator | null>(null);
 
@@ -40,7 +40,7 @@ export const useBarRaceAnimation = (
       colors,
       animationStyle,
       theme === 'dark',
-      textStyle
+      font
     );
 
     animatorRef.current = animator;
