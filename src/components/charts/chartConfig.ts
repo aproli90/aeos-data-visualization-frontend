@@ -1,9 +1,22 @@
-export const commonChartOptions = {
-  textStyle: {
+export type TextStyle = {
+  fontFamily?: string;
+  fontSize?: number;
+  fontWeight?: number;
+  color?: string;
+}
+
+export const getChartTextStyle = (font: string = 'Default', isDark: boolean = false) : TextStyle => {
+  console.log('[getChartTextStyle] Applying font:', font);
+  return {
+    fontFamily: font,
     fontSize: 14,
     fontWeight: 500,
-    color: 'inherit'
-  },
+    color: isDark ? '#e5e7eb' : '#374151'
+  };
+};
+
+export const commonChartOptions = {
+  textStyle: getChartTextStyle(),
   tooltip: {
     trigger: 'item',
     backgroundColor: 'rgba(255, 255, 255, 0.95)',

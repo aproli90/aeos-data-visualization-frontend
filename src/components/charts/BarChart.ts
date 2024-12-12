@@ -1,10 +1,11 @@
 import type { EChartsOption } from 'echarts';
 import type { DataSeries } from '../../services/api';
 import { calculateYAxisRange, getAxisLabelOptions, getYAxisLabelConfig } from './utils';
-import { commonChartOptions } from './chartConfig';
+import { commonChartOptions, TextStyle } from './chartConfig';
 import { createGradient } from '../../utils/colorUtils';
 
 interface BarChartProps {
+  textStyle: TextStyle;
   dataSeries: DataSeries[];
   chartType: 'vertical_bar' | 'horizontal_bar';
   colors: string[];
@@ -19,6 +20,7 @@ interface BarChartProps {
 }
 
 export const getBarChartOptions = ({
+  textStyle,
   dataSeries,
   chartType,
   colors,
@@ -54,15 +56,16 @@ export const getBarChartOptions = ({
       })),
       show: !isSingleSeries,
       textStyle: {
-        color: isDark ? '#e5e7eb' : '#374151'
+        color: isDark ? '#e5e7eb' : '#374151',
+        fontFamily: textStyle?.fontFamily
       }
     },
     [isHorizontal ? 'yAxis' : 'xAxis']: {
       type: 'category',
       data: categories,
       axisLabel: isHorizontal 
-        ? { ...commonChartOptions.textStyle, width: 120, color: isDark ? '#d1d5db' : '#374151' }
-        : getAxisLabelOptions(categories, 800, isDark),
+        ? { ...commonChartOptions.textStyle, width: 120, color: isDark ? '#d1d5db' : '#374151', fontFamily: textStyle?.fontFamily, }
+        : getAxisLabelOptions(categories, 800, isDark, textStyle?.fontFamily),
       axisLine: {
         lineStyle: { 
           width: 2,
@@ -83,7 +86,8 @@ export const getBarChartOptions = ({
       axisLabel: {
         ...commonChartOptions.textStyle,
         ...getYAxisLabelConfig(isDark),
-        color: isDark ? '#d1d5db' : '#374151'
+        color: isDark ? '#d1d5db' : '#374151',
+        fontFamily: textStyle?.fontFamily,
       },
       min: yAxisRange.min,
       max: yAxisRange.max,
@@ -135,6 +139,7 @@ export const getBarChartOptions = ({
             distance: isHorizontal ? 5 : 8,
             fontSize: 14,
             fontWeight: 500,
+            fontFamily: textStyle?.fontFamily,
             color: isDark ? '#e5e7eb' : '#374151',
             backgroundColor: isDark ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)',
             padding: [4, 8],
@@ -160,6 +165,7 @@ export const getBarChartOptions = ({
           show: showDataLabels,
           fontSize: 16,
           fontWeight: 600,
+          fontFamily: textStyle?.fontFamily,
           color: isDark ? '#e5e7eb' : '#374151',
           backgroundColor: isDark ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
           padding: [6, 10],

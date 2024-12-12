@@ -1,6 +1,4 @@
-import type { EChartsOption } from 'echarts';
 import type { DataSeries } from '../../services/api';
-import { commonChartOptions } from './chartConfig';
 
 export const calculateYAxisRange = (data: DataSeries[]) => {
   let minValue = Infinity;
@@ -59,7 +57,7 @@ export const shouldRotateLabels = (categories: string[], containerWidth: number)
   return totalWidth > containerWidth || maxLabelWidth > (containerWidth / categories.length);
 };
 
-export const getAxisLabelOptions = (categories: string[], containerWidth: number, isDark: boolean) => {
+export const getAxisLabelOptions = (categories: string[], containerWidth: number, isDark: boolean, fontFamily?: string) => {
   const shouldRotate = shouldRotateLabels(categories, containerWidth);
   return {
     rotate: shouldRotate ? 45 : 0,
@@ -69,6 +67,7 @@ export const getAxisLabelOptions = (categories: string[], containerWidth: number
     align: shouldRotate ? 'right' : 'center',
     fontSize: 14,
     fontWeight: 500,
+    fontFamily: fontFamily || 'Default',
     padding: [8, 4],
     color: isDark ? '#e5e7eb' : '#374151'
   };
@@ -78,20 +77,14 @@ export const formatYAxisLabel = (value: number) => {
   return Number.isInteger(value) ? value.toString() : '';
 };
 
-export const getYAxisLabelConfig = (isDark: boolean) => {
+export const getYAxisLabelConfig = (isDark: boolean, fontFamily?: string) => {
   return {
     formatter: (value: number) => formatYAxisLabel(value),
     interval: 'auto',
     axisLabel: {
       hideOverlap: true,
-      color: isDark ? '#e5e7eb' : '#374151'
+      color: isDark ? '#e5e7eb' : '#374151',
+      fontFamily: fontFamily || 'Default',
     }
   };
 };
-
-export const getDataLabelConfig = (formatter?: (params: any) => string, isDark?: boolean) => ({
-  ...commonChartOptions.dataLabel,
-  formatter: formatter || ((params: any) => params.value),
-  color: isDark ? '#e5e7eb' : '#374151',
-  backgroundColor: isDark ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)'
-});

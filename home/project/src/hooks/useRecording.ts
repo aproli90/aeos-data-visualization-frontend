@@ -10,7 +10,7 @@ interface UseRecordingOptions {
 
 const FRAME_RATE = 60;
 const FRAME_INTERVAL = 1000 / FRAME_RATE;
-const BUFFER_DURATION = 2000; // Increased buffer duration
+const BUFFER_DURATION = 500; // Reduced buffer duration
 
 export const useRecording = ({ targetRef, dataSeries, onComplete }: UseRecordingOptions) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -24,52 +24,62 @@ export const useRecording = ({ targetRef, dataSeries, onComplete }: UseRecording
   const progressIntervalRef = useRef<number>();
 
   const calculateDuration = useCallback(() => {
-  const chartContainer = targetRef.current?.querySelector('[data-chart-type]');
-  if (!chartContainer) {
-    console.error('Chart container not found');
-    return 5000; // Increased default duration as fallback
-  }
+    const chartContainer = targetRef.current?.querySelector('[data-chart-type]');
+    if (!chartContainer) {
+      console.error('Chart container not found');
+      return 2500; // Default fallback duration
+    }
 
-  const chartType = chartContainer.getAttribute('data-chart-type') as ChartType;
-  const animationStyleKey = chartContainer.getAttribute('data-animation-style');
-  
-  if (!chartType || !animationStyleKey || !ANIMATION_STYLES[chartType]) {
-    console.error('Invalid chart type or animation style');
-    return 5000; // Increased default duration as fallback
-  }
+    const chartType = chartContainer.getAttribute('data-chart-type') as ChartType;
+    const animationStyleKey = chartContainer.getAttribute('data-animation-style');
+    
+    if (!chartType || !animationStyleKey || !ANIMATION_STYLES[chartType]) {
+      console.error('Invalid chart type or animation style');
+      return 2500; // Default fallback duration
+    }
 
-  const styles = ANIMATION_STYLES[chartType];
-  const animationStyle = styles[animationStyleKey as keyof typeof styles];
-  if (!animationStyle) {
-    console.error('Animation style not found');
-    return 5000; // Increased default duration as fallback
-  }
+    const styles = ANIMATION_STYLES[chartType];
+    const animationStyle = styles[animationStyleKey as keyof typeof styles];
+    if (!animationStyle) {
+      console.error('Animation style not found');
+      return 2500; // Default fallback duration
+    }
 
-  // Calculate max points across all series
-  const maxPoints = Math.max(...dataSeries.map(series => series.dataPoints.length));
+    // Calculate max points across all series
+    const maxPoints = Math.max(...dataSeries.map(series => series.dataPoints.length));
 
-  // For bar race, we need extra time for the full animation cycle
-  if (chartType === 'bar_race') {
-    const combinedDuration = animationStyle.duration * maxPoints;
-    // Total duration includes all transitions between states plus extra time for sorting animations
-    const totalDuration = combinedDuration * 1.5;
-    // Add extra buffer for initial and final states
-    return totalDuration + BUFFER_DURATION;
-  }
+    // For bar race charts
+    if (chartType === 'bar_race') {
+      const updateDuration = animationStyle.updateDuration || 2000;
+      return (updateDuration * maxPoints) + BUFFER_DURATION;
+    }
 
-  // For other chart types
-  const baseDuration = animationStyle.duration;
-  const delayPerPoint = animationStyle.delay || 0;
-  
-  // Calculate combined duration based on points
-  const combinedDuration = baseDuration * maxPoints;
-  const totalDelay = delayPerPoint * maxPoints;
-  const complexityMultiplier = chartType === 'pie' || chartType === 'donut' ? 2 : 1.5;
-  const totalDuration = (combinedDuration + totalDelay) * complexityMultiplier;
+    // For other chart types
+    const baseDuration = animationStyle.duration || 2000;
+    const delayPerPoint = animationStyle.delay || 0;
+    const totalDelay = delayPerPoint * maxPoints;
 
-  // Add buffer duration for start and end states
-  return totalDuration + BUFFER_DURATION;
-}, [dataSeries, targetRef]);
+    // Calculate total duration based on chart type
+    switch (chartType) {
+      case 'pie':
+      case 'donut':
+        // Add extra time for rotation/expansion
+        return baseDuration + totalDelay + BUFFER_DURATION;
+
+      case 'line':
+      case 'area':
+        // Account for sequential point animations
+        return baseDuration + totalDelay + BUFFER_DURATION;
+
+      case 'vertical_bar':
+      case 'horizontal_bar':
+        // Account for staggered bar animations
+        return baseDuration + totalDelay + BUFFER_DURATION;
+
+      default:
+        return baseDuration + totalDelay + BUFFER_DURATION;
+    }
+  }, [dataSeries, targetRef]);
 
   const updateProgress = useCallback(() => {
     if (durationRef.current === 0) return;
@@ -128,7 +138,7 @@ export const useRecording = ({ targetRef, dataSeries, onComplete }: UseRecording
 
       const stream = canvas.captureStream(FRAME_RATE);
       const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'video/webm;codecs=vp9',
+        mimeType: 'video/webm;codecs=vp8',
         videoBitsPerSecond: 8000000
       });
 

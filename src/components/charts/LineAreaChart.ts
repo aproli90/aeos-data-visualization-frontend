@@ -1,10 +1,11 @@
 import type { EChartsOption } from 'echarts';
 import type { DataSeries } from '../../services/api';
 import { calculateYAxisRange, getAxisLabelOptions, getYAxisLabelConfig } from './utils';
-import { commonChartOptions } from './chartConfig';
+import { TextStyle, commonChartOptions } from './chartConfig';
 import { createGradient, hexToRGBA } from '../../utils/colorUtils';
 
 interface LineAreaChartProps {
+  textStyle: TextStyle;
   dataSeries: DataSeries[];
   chartType: 'line' | 'area';
   colors: string[];
@@ -20,6 +21,7 @@ interface LineAreaChartProps {
 }
 
 export const getLineAreaChartOptions = ({
+  textStyle,
   dataSeries,
   chartType,
   colors,
@@ -49,13 +51,17 @@ export const getLineAreaChartOptions = ({
       bottom: 0,
       data: dataSeries.map(series => series.name),
       textStyle: {
-        color: isDark ? '#e5e7eb' : '#374151'
+        color: isDark ? '#e5e7eb' : '#374151',
+        fontFamily: textStyle?.fontFamily
       }
     },
     xAxis: {
       type: 'category',
       data: categories,
-      axisLabel: getAxisLabelOptions(categories, 800, isDark),
+      axisLabel: {
+        ...getAxisLabelOptions(categories, 800, isDark),
+        fontFamily: textStyle?.fontFamily
+      },
       axisLine: {
         lineStyle: { 
           width: 2,
@@ -76,7 +82,8 @@ export const getLineAreaChartOptions = ({
       axisLabel: {
         ...commonChartOptions.textStyle,
         ...getYAxisLabelConfig(isDark),
-        color: isDark ? '#d1d5db' : '#374151'
+        color: isDark ? '#d1d5db' : '#374151',
+        fontFamily: textStyle?.fontFamily,
       },
       min: yAxisRange.min,
       max: yAxisRange.max,
@@ -167,6 +174,7 @@ export const getLineAreaChartOptions = ({
           distance: 10,
           fontSize: 14,
           fontWeight: 500,
+          fontFamily: textStyle?.fontFamily,
           color: isDark ? '#e5e7eb' : '#374151',
           backgroundColor: isDark ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)',
           padding: [4, 8],
@@ -191,6 +199,7 @@ export const getLineAreaChartOptions = ({
             show: showDataLabels,
             fontSize: 16,
             fontWeight: 600,
+            fontFamily: textStyle?.fontFamily,
             color: isDark ? '#e5e7eb' : '#374151',
             backgroundColor: isDark ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
             padding: [6, 10],

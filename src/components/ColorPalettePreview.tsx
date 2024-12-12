@@ -1,18 +1,24 @@
 import React from 'react';
-import { COLOR_PALETTES, type ColorPalette } from '../constants/colorPalettes';
 
 interface ColorPalettePreviewProps {
-  palette: ColorPalette;
+  colors: string[];
+  maxColors?: number;
 }
 
-export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({ palette }) => {
-  const colors = COLOR_PALETTES[palette];
+export const ColorPalettePreview: React.FC<ColorPalettePreviewProps> = ({ 
+  colors = [], 
+  maxColors = 5 
+}) => {
+  if (!colors || !Array.isArray(colors)) {
+    console.warn('ColorPalettePreview: Invalid colors prop', { colors });
+    return null;
+  }
 
   return (
     <div className="flex gap-1">
-      {colors.slice(0, 5).map((color, index) => (
+      {colors.slice(0, maxColors).map((color, index) => (
         <div
-          key={index}
+          key={`${color}-${index}`}
           className="w-3 h-3 rounded-full"
           style={{ backgroundColor: color }}
         />

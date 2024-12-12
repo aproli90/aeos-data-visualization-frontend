@@ -32,10 +32,10 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-6">
       <div
         ref={modalRef}
-        className="relative w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-h-[90vh] flex flex-col"
+        className="relative w-full max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex flex-col max-h-[calc(100vh-3rem)]"
       >
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
@@ -46,7 +46,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
             <X className="w-5 h-5" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto custom-scrollbar">{children}</div>
+        <div className="flex-1 p-6 overflow-y-auto custom-scrollbar">{children}</div>
       </div>
     </div>
   );

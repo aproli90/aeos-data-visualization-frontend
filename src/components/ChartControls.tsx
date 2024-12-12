@@ -1,19 +1,21 @@
 import React from 'react';
-import { Palette, Wand2, Type, LineChart, BarChart2, PieChart, LayoutList, Activity, TrendingUp } from 'lucide-react';
+import { Palette, Wand2, Type, LineChart, BarChart2, PieChart, LayoutList, Activity, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { COLOR_PALETTES, type ColorPalette } from '../constants/colorPalettes';
 import { ANIMATION_STYLES, type ChartType } from '../constants/animationStyles';
 import { ColorPaletteDropdown } from './ColorPaletteDropdown';
 import { SelectWrapper } from './SelectWrapper';
+import { useSeriesNavigation } from './EChartsRenderer/hooks/useSeriesNavigation';
 
 interface ChartControlsProps {
   chartType: ChartType;
   colorPalette: ColorPalette;
+  colors: string[];
   animationStyle: string;
   smoothPoints: boolean;
   currentSeriesIndex?: number;
-  totalSeries?: number;
+  dataSeries?: { name: string }[];
   onChartTypeChange: (type: ChartType) => void;
-  onColorPaletteChange: (palette: ColorPalette) => void;
+  onColorPaletteChange: (palette: string, colors: string[]) => void;
   onColorRotate: () => void;
   onAnimationStyleChange: (style: string) => void;
   onSmoothPointsChange: (smooth: boolean) => void;
@@ -69,10 +71,11 @@ const chartGroups = [
 export const ChartControls: React.FC<ChartControlsProps> = ({
   chartType,
   colorPalette,
+  colors,
   animationStyle,
   smoothPoints,
   currentSeriesIndex = 0,
-  totalSeries = 1,
+  dataSeries = [],
   onChartTypeChange,
   onColorPaletteChange,
   onColorRotate,
@@ -80,8 +83,27 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
   onSmoothPointsChange,
   onSeriesChange
 }) => {
+  const {
+    navigateNext,
+    navigatePrevious,
+    totalSeries,
+    currentSeries
+  } = useSeriesNavigation(dataSeries, currentSeriesIndex);
+
   const isPieOrDonut = chartType === 'pie' || chartType === 'donut';
   const isLineOrArea = chartType === 'line' || chartType === 'area';
+
+  const handlePrevious = () => {
+    if (navigatePrevious() && onSeriesChange) {
+      onSeriesChange(currentSeriesIndex > 0 ? currentSeriesIndex - 1 : totalSeries - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (navigateNext() && onSeriesChange) {
+      onSeriesChange(currentSeriesIndex < totalSeries - 1 ? currentSeriesIndex + 1 : 0);
+    }
+  };
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -114,7 +136,8 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
       >
         <ColorPaletteDropdown
           value={colorPalette}
-          onChange={onColorPaletteChange}
+          colors={colors}
+          onChange={(palette, newColors) => onColorPaletteChange(palette, newColors)}
         />
       </SelectWrapper>
 
@@ -142,6 +165,30 @@ export const ChartControls: React.FC<ChartControlsProps> = ({
             <option value="smooth">Smooth</option>
             <option value="straight">Straight</option>
           </select>
+        </SelectWrapper>
+      )}
+
+      {isPieOrDonut && totalSeries > 1 && (
+        <SelectWrapper icon={<LayoutList className="w-5 h-5" />} label="Data Series">
+          <div className="flex items-center gap-2 px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800">
+            <button
+              onClick={handlePrevious}
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Previous series"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            </button>
+            <div className="flex-1 text-center text-sm font-medium text-gray-700 dark:text-gray-200">
+              {currentSeries?.name || `Series ${currentSeriesIndex + 1}`}
+            </div>
+            <button
+              onClick={handleNext}
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Next series"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            </button>
+          </div>
         </SelectWrapper>
       )}
     </div>

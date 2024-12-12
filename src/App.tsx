@@ -6,25 +6,23 @@ import { ChartActions } from './components/ChartActions';
 import { AuthorCredits } from './components/AuthorCredits';
 import { RecordingOverlay } from './components/RecordingOverlay';
 import { ThemeToggle } from './components/ThemeToggle';
+import { FontToggle } from './components/FontSelector/FontToggle';
 import { ResizableChartContainer } from './components/ResizableChartContainer';
 import { DataEditor } from './components/DataEditor';
 import { analyzeText, type ChartData } from './services/api';
-import { COLOR_PALETTES, type ColorPalette } from './constants/colorPalettes';
-import { ANIMATION_STYLES, type ChartType } from './constants/animationStyles';
-import { BarChart2, LineChart, PieChart } from 'lucide-react';
-import { rotateColors } from './utils/colorUtils';
+import { useColorPalette } from './hooks/useColorPalette';
+import { useChartFont } from './hooks/useChartFont';
+import { useAnimationStyle } from './hooks/useAnimationStyle';
+import { type ChartType } from './constants/animationStyles';
 import { useTheme } from './contexts/ThemeContext';
 
 export default function App() {
-  const [input, setInput] = useState('');
+  const [userInput, setUserInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [animationKey, setAnimationKey] = useState(0);
-  const [colorPalette, setColorPalette] = useState<ColorPalette>('modern');
-  const [colors, setColors] = useState(COLOR_PALETTES.modern);
-  const [animationStyle, setAnimationStyle] = useState('');
   const [smoothPoints, setSmoothPoints] = useState(true);
   const [showDataLabels, setShowDataLabels] = useState(true);
   const [showGridlines, setShowGridlines] = useState(true);
@@ -32,23 +30,35 @@ export default function App() {
   const chartSectionRef = useRef<HTMLDivElement>(null);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const { theme } = useTheme();
+  const { font, setFont } = useChartFont();
+
+  const { 
+    colorPalette, 
+    colors, 
+    handleColorPaletteChange,
+    handleColorRotate
+  } = useColorPalette('modern', () => {
+    setAnimationKey(prev => prev + 1);
+  });
+
+  const { 
+    animationStyle, 
+    currentAnimationStyle, 
+    setAnimationStyle, 
+    initializeAnimationStyle 
+  } = useAnimationStyle(chartData);
 
   useEffect(() => {
     if (chartData) {
       const chartType = chartData.recommendedChartType as ChartType;
-      const styles = ANIMATION_STYLES[chartType];
-      if (styles) {
-        const defaultStyle = Object.keys(styles)[0];
-        setAnimationStyle(defaultStyle);
-      }
-      
+      initializeAnimationStyle(chartType);
       setCurrentSeriesIndex(0);
       chartSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [chartData]);
+  }, [chartData, initializeAnimationStyle]);
 
   const handleAnalyze = async () => {
-    if (!input.trim()) {
+    if (!userInput.trim()) {
       setError('Please enter some text to analyze');
       return;
     }
@@ -56,7 +66,7 @@ export default function App() {
     setError(null);
     setLoading(true);
     try {
-      const result = await analyzeText(input);
+      const result = await analyzeText(userInput);
       setChartData(result);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unexpected error occurred');
@@ -84,37 +94,12 @@ export default function App() {
     setIsRecording(true);
   };
 
-  const getCurrentAnimationStyle = () => {
-    if (!chartData) return null;
-    const chartType = chartData.recommendedChartType as ChartType;
-    const styles = ANIMATION_STYLES[chartType];
-    return styles?.[animationStyle] || Object.values(styles)[0];
-  };
-
-  const handleSeriesChange = (index: number) => {
-    setCurrentSeriesIndex(index);
-    setAnimationKey(prev => prev + 1);
-  };
-
   const handleChartTypeChange = (type: ChartType) => {
     if (chartData) {
       setChartData({ ...chartData, recommendedChartType: type });
-      const styles = ANIMATION_STYLES[type];
-      if (styles) {
-        const defaultStyle = Object.keys(styles)[0];
-        setAnimationStyle(defaultStyle);
-      }
+      initializeAnimationStyle(type);
       setAnimationKey(prev => prev + 1);
     }
-  };
-
-  const handleColorPaletteChange = (palette: ColorPalette) => {
-    setColorPalette(palette);
-    setColors(COLOR_PALETTES[palette]);
-  };
-
-  const handleColorRotate = () => {
-    setColors(prevColors => rotateColors(prevColors));
   };
 
   const handleDataUpdate = (newData: ChartData['dataSeries']) => {
@@ -127,8 +112,10 @@ export default function App() {
   const isPieOrDonut = chartData?.recommendedChartType === 'pie' || chartData?.recommendedChartType === 'donut';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-gray-900 dark:to-indigo-950 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-gray-900 dark:to-indigo-950 transition-colors">
       <ThemeToggle />
+      <FontToggle currentFont={font} onFontChange={setFont} />
+      
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center justify-center gap-6 mb-12">
@@ -138,10 +125,10 @@ export default function App() {
           </div>
 
           <TextInput
-            input={input}
+            input={userInput}
             loading={loading}
             error={error}
-            onInputChange={setInput}
+            onInputChange={setUserInput}
             onAnalyze={handleAnalyze}
           />
           
@@ -153,16 +140,18 @@ export default function App() {
                 <ChartControls
                   chartType={chartData.recommendedChartType as ChartType}
                   colorPalette={colorPalette}
+                  colors={colors}
                   animationStyle={animationStyle}
                   smoothPoints={smoothPoints}
                   currentSeriesIndex={currentSeriesIndex}
                   totalSeries={chartData.dataSeries.length}
+                  dataSeries={chartData.dataSeries}
                   onChartTypeChange={handleChartTypeChange}
                   onColorPaletteChange={handleColorPaletteChange}
                   onColorRotate={handleColorRotate}
                   onAnimationStyleChange={setAnimationStyle}
                   onSmoothPointsChange={setSmoothPoints}
-                  onSeriesChange={handleSeriesChange}
+                  onSeriesChange={setCurrentSeriesIndex}
                 />
               </div>
 
@@ -170,16 +159,17 @@ export default function App() {
                 <ResizableChartContainer>
                   <div ref={chartContainerRef} className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg h-full">
                     <EChartsRenderer
-                      dataSeries={chartData.dataSeries}
-                      currentSeriesIndex={currentSeriesIndex}
+                      dataSeries={isPieOrDonut ? [chartData.dataSeries[currentSeriesIndex]] : chartData.dataSeries}
                       chartType={chartData.recommendedChartType}
                       animationKey={animationKey}
                       colors={colors}
                       showGridlines={showGridlines}
-                      animationStyle={getCurrentAnimationStyle()}
+                      animationStyle={currentAnimationStyle}
                       animationStyleKey={animationStyle}
                       smoothPoints={smoothPoints}
                       showDataLabels={showDataLabels}
+                      currentSeriesIndex={currentSeriesIndex}
+                      font={font}
                     />
                   </div>
                 </ResizableChartContainer>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useRecording } from '../hooks/useRecording';
+import { useRecording } from '../hooks/recording';
 import type { DataSeries } from '../services/api';
 
 interface RecordingOverlayProps {
