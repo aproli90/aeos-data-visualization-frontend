@@ -9,7 +9,7 @@ import { ThemeToggle } from './components/ThemeToggle';
 import { FontToggle } from './components/FontSelector/FontToggle';
 import { ResizableChartContainer } from './components/ResizableChartContainer';
 import { DataEditor } from './components/DataEditor';
-import { analyzeText, type ChartData } from './services/api';
+import { type ChartData } from './services/api';
 import { useColorPalette } from './hooks/useColorPalette';
 import { useChartFont } from './hooks/useChartFont';
 import { useAnimationStyle } from './hooks/useAnimationStyle';
@@ -17,11 +17,8 @@ import { type ChartType } from './constants/animationStyles';
 import { useTheme } from './contexts/ThemeContext';
 
 export default function App() {
-  const [userInput, setUserInput] = useState('');
-  const [loading, setLoading] = useState(false);
   const [chartData, setChartData] = useState<ChartData | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [animationKey, setAnimationKey] = useState(0);
   const [smoothPoints, setSmoothPoints] = useState(true);
   const [showDataLabels, setShowDataLabels] = useState(true);
@@ -56,23 +53,6 @@ export default function App() {
       chartSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   }, [chartData, initializeAnimationStyle]);
-
-  const handleAnalyze = async () => {
-    if (!userInput.trim()) {
-      setError('Please enter some text to analyze');
-      return;
-    }
-
-    setError(null);
-    setLoading(true);
-    try {
-      const result = await analyzeText(userInput);
-      setChartData(result);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
-    }
-    setLoading(false);
-  };
 
   const handleRecordingComplete = (url: string | null) => {
     if (url) {
@@ -124,13 +104,7 @@ export default function App() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Transform data stories into beautiful visualizations</p>
           </div>
 
-          <TextInput
-            input={userInput}
-            loading={loading}
-            error={error}
-            onInputChange={setUserInput}
-            onAnalyze={handleAnalyze}
-          />
+          <TextInput onChartData={setChartData} />
           
           {chartData && (
             <div ref={chartSectionRef} className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-8">

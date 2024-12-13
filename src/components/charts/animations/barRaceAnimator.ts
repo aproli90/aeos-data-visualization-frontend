@@ -131,7 +131,7 @@ export class BarRaceAnimator {
           fontSize: 16,
           fontWeight: 'bold',
           fill: this.isDark ? '#e5e7eb' : '#374151',
-          fontFamily: this.font,
+          fontFamily: this.font || 'Default',
         }
       }]
     });

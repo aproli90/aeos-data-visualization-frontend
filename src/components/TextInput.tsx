@@ -1,26 +1,38 @@
-import React, { KeyboardEvent } from 'react';
+import React, { useState, KeyboardEvent } from 'react';
 import { Brain, Loader2, FileText, AlertCircle } from 'lucide-react';
 import { DecorativeIcons } from './DecorativeIcons';
+import { analyzeText, type ChartData } from '../services/api';
 
 interface TextInputProps {
-  input: string;
-  loading: boolean;
-  error: string | null;
-  onInputChange: (value: string) => void;
-  onAnalyze: () => void;
+  onChartData: (data: ChartData) => void;
 }
 
-export const TextInput: React.FC<TextInputProps> = ({
-  input,
-  loading,
-  error,
-  onInputChange,
-  onAnalyze
-}) => {
+export const TextInput: React.FC<TextInputProps> = ({ onChartData }) => {
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleAnalyze = async () => {
+    if (!input.trim()) {
+      setError('Please enter some text to analyze');
+      return;
+    }
+
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await analyzeText(input);
+      onChartData(result);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+    }
+    setLoading(false);
+  };
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey) && !loading && input.trim()) {
       e.preventDefault();
-      onAnalyze();
+      handleAnalyze();
     }
   };
 
@@ -44,7 +56,7 @@ export const TextInput: React.FC<TextInputProps> = ({
         <div className="relative">
           <textarea
             value={input}
-            onChange={(e) => onInputChange(e.target.value)}
+            onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             className="w-full h-48 p-4 bg-white dark:bg-gray-900 
               border border-indigo-200 dark:border-gray-700 rounded-xl 
@@ -67,7 +79,7 @@ export const TextInput: React.FC<TextInputProps> = ({
 
       <div className="flex justify-center">
         <button
-          onClick={onAnalyze}
+          onClick={handleAnalyze}
           disabled={loading || !input.trim()}
           className="flex items-center px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 
             hover:from-indigo-700 hover:to-purple-700 dark:from-indigo-500 dark:to-purple-500 
